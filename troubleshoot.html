@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Troubleshoot – Leitura de Passaporte</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:Segoe UI,Arial,sans-serif;margin:0;background:#f0f2f5;color:#222}
+header{background:#1f3a5f;color:#fff;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:18px;margin:0;flex:1}
+button{cursor:pointer;border:0;border-radius:6px;padding:8px 14px;font-size:14px;background:#2d6cdf;color:#fff}
+button:hover{opacity:.9}
+button.sec{background:#6b7785}button.del{background:#c0392b}button.ok{background:#2e8b57}
+header button.tab{background:#ffffff22}header button.tab.active{background:#fff;color:#1f3a5f}
+main{max-width:900px;margin:20px auto;padding:0 16px}
+.card{background:#fff;border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px #0002}
+input[type=text],textarea,select{width:100%;padding:8px;border:1px solid #bbb;border-radius:6px;font:inherit}
+.opt{display:flex;gap:6px;margin:6px 0;align-items:center}
+.opt input{flex:1}
+.opt .go{background:#e8eefc;color:#2d6cdf;padding:8px 10px}
+.tag{font-size:12px;color:#666}
+.qhead{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.start{background:#2e8b57;color:#fff;font-size:11px;padding:2px 8px;border-radius:10px}
+.step{border-left:4px solid #2d6cdf;margin-left:8px;padding-left:12px}
+.choice{display:block;width:100%;text-align:left;margin:6px 0;background:#eef3ff;color:#1f3a5f;border:2px solid #cfdcf8;padding:12px}
+.choice.sel{background:#2d6cdf;color:#fff;border-color:#2d6cdf}
+.result{background:#e6f6ec;border:2px solid #2e8b57;padding:12px;border-radius:8px;margin-top:6px}
+.hidden{display:none}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<header>
+<h1>🛂 Troubleshoot – Leitura de Passaporte</h1>
+<button class="tab active" id="tabU" onclick="show('user')">Utilizador</button>
+<button class="tab" id="tabA" onclick="show('admin')">Gestão</button>
+</header>
+<main>
+<section id="user"></section>
+<section id="admin" class="hidden">
+ <div class="card row">
+  <button onclick="addQ()">+ Nova pergunta</button>
+  <button class="ok" onclick="exportJ()">Exportar JSON</button>
+  <button class="sec" onclick="document.getElementById('file').click()">Importar JSON</button>
+  <input type="file" id="file" accept=".json" class="hidden" onchange="importJ(event)">
+  <button class="del" onclick="if(confirm('Repor fluxo de exemplo?')){data=sample();save();renderA()}">Repor exemplo</button>
+ </div>
+ <div class="card"><label>Pergunta inicial:</label><select id="startSel" onchange="data.start=this.value;save()"></select></div>
+ <div id="qs"></div>
+</section>
+</main>
+<script>
+const KEY='ts_passaporte_v1';
+const uid=()=>'q'+Math.random().toString(36).slice(2,8);
+function sample(){return{start:'q1',questions:{
+ q1:{text:'O leitor de passaportes está ligado e com luz acesa?',options:[{text:'Sim',next:'q2'},{text:'Não',next:'q3'}]},
+ q2:{text:'A aplicação deteta o passaporte quando é colocado?',options:[{text:'Sim, mas falha a leitura',next:'q4'},{text:'Não deteta',next:null,result:'Limpe o vidro do leitor e reinicie o serviço do leitor.'}]},
+ q3:{text:'O cabo USB está bem ligado?',options:[{text:'Sim',next:null,result:'Teste outra porta USB ou outro cabo; se persistir, substitua o leitor.'},{text:'Não',next:null,result:'Ligue o cabo USB e aguarde 10 segundos.'}]},
+ q4:{text:'A zona MRZ do passaporte está limpa e bem posicionada?',options:[{text:'Sim',next:null,result:'Escalar para suporte: recolher logs da aplicação.'},{text:'Não',next:null,result:'Limpe o documento e coloque-o alinhado com a marca do leitor.'}]}
+}}}
+let data=JSON.parse(localStorage.getItem(KEY)||'null')||sample();
+const save=()=>localStorage.setItem(KEY,JSON.stringify(data));
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function show(v){user.classList.toggle('hidden',v!='user');admin.classList.toggle('hidden',v!='admin');
+ tabU.classList.toggle('active',v=='user');tabA.classList.toggle('active',v=='admin');
+ v=='user'?startU():renderA()}
+
+/* ---------- Utilizador ---------- */
+let path=[];
+function startU(){path=data.questions[data.start]?[{q:data.start,sel:null}]:[];renderU()}
+function renderU(){
+ let h='<div class="card"><button class="sec" onclick="startU()">↺ Recomeçar</button></div>';
+ if(!path.length)h+='<div class="card">Sem perguntas configuradas. Use a Gestão.</div>';
+ path.forEach((p,i)=>{
+  const q=data.questions[p.q];if(!q)return;
+  h+=`<div class="card step"><b>${i+1}. ${esc(q.text)}</b>`;
+  q.options.forEach((o,j)=>h+=`<button class="choice ${p.sel===j?'sel':''}" onclick="pick(${i},${j})">${esc(o.text)}</button>`);
+  if(p.sel!=null){const o=q.options[p.sel];
+   if(o.result)h+=`<div class="result">✅ ${esc(o.result)}</div>`;
+   else if(!o.next||!data.questions[o.next])h+='<div class="tag">Fim do fluxo.</div>';}
+  h+='</div>';});
+ user.innerHTML=h}
+function pick(i,j){
+ path=path.slice(0,i+1);path[i].sel=j;
+ const o=data.questions[path[i].q].options[j];
+ if(o.next&&data.questions[o.next]&&!path.some(p=>p.q==o.next))path.push({q:o.next,sel:null});
+ renderU()}
+
+/* ---------- Gestão ---------- */
+function addQ(){const id=uid();data.questions[id]={text:'Nova pergunta',options:[]};if(!data.start)data.start=id;save();renderA()}
+function delQ(id){if(!confirm('Apagar pergunta?'))return;delete data.questions[id];
+ Object.values(data.questions).forEach(q=>q.options.forEach(o=>{if(o.next===id)o.next=null}));
+ if(data.start===id)data.start=Object.keys(data.questions)[0]||'';save();renderA()}
+function addO(id){data.questions[id].options.push({text:'Nova opção',next:null});save();renderA()}
+function delO(id,j){data.questions[id].options.splice(j,1);save();renderA()}
+function setQ(id,v){data.questions[id].text=v;save();refreshSel()}
+function setO(id,j,v){data.questions[id].options[j].text=v;save()}
+function setR(id,j,v){data.questions[id].options[j].result=v;save()}
+/* ícone → cria (ou abre) a pergunta seguinte */
+function goNext(id,j){const o=data.questions[id].options[j];
+ if(!o.next||!data.questions[o.next]){const n=uid();data.questions[n]={text:'Nova pergunta',options:[]};o.next=n;save();renderA();
+  setTimeout(()=>{const e=document.getElementById('c_'+n);e.scrollIntoView({behavior:'smooth',block:'center'});e.querySelector('input').focus()},50)}
+ else{const e=document.getElementById('c_'+o.next);e.scrollIntoView({behavior:'smooth',block:'center'});e.style.outline='3px solid #2d6cdf';setTimeout(()=>e.style.outline='',1500)}}
+function setNext(id,j,v){data.questions[id].options[j].next=v||null;save();renderA()}
+function refreshSel(){startSel.innerHTML=Object.entries(data.questions).map(([k,q])=>`<option value="${k}" ${k==data.start?'selected':''}>${esc(q.text)}</option>`).join('')}
+function renderA(){
+ refreshSel();
+ const opts=(cur)=>'<option value="">— sem pergunta seguinte —</option>'+Object.entries(data.questions).map(([k,q])=>`<option value="${k}" ${k==cur?'selected':''}>${esc(q.text).slice(0,50)}</option>`).join('');
+ qs.innerHTML=Object.entries(data.questions).map(([id,q])=>`
+ <div class="card" id="c_${id}">
+  <div class="qhead"><input type="text" value="${esc(q.text)}" oninput="setQ('${id}',this.value)">
+   ${id==data.start?'<span class="start">INÍCIO</span>':''}
+   <button class="del" title="Apagar pergunta" onclick="delQ('${id}')">🗑</button></div>
+  ${q.options.map((o,j)=>`
+   <div class="opt"><input type="text" value="${esc(o.text)}" placeholder="Resposta" oninput="setO('${id}',${j},this.value)">
+    <button class="go" title="Ir para / criar pergunta seguinte" onclick="goNext('${id}',${j})">➜</button>
+    <select style="width:200px" onchange="setNext('${id}',${j},this.value)">${opts(o.next)}</select>
+    <button class="del" onclick="delO('${id}',${j})">✕</button></div>
+   ${o.next?'':`<input type="text" style="margin-bottom:6px" value="${esc(o.result||'')}" placeholder="Solução/resultado final (se não houver pergunta seguinte)" oninput="setR('${id}',${j},this.value)">`}
+  `).join('')}
+  <button class="sec" onclick="addO('${id}')">+ Resposta</button>
+ </div>`).join('')}
+function exportJ(){const a=document.createElement('a');
+ a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+ a.download='troubleshoot-passaporte.json';a.click()}
+function importJ(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();
+ r.onload=()=>{try{const d=JSON.parse(r.result);
+  if(!d.questions||typeof d.questions!=='object')throw 0;
+  Object.values(d.questions).forEach(q=>{if(!Array.isArray(q.options))q.options=[]});
+  if(!d.questions[d.start])d.start=Object.keys(d.questions)[0]||'';
+  data=d;save();renderA();alert('Importado com sucesso.')}catch{alert('JSON inválido.')}
+  e.target.value=''};r.readAsText(f)}
+startU();
+</script>
+</body>
+</html>
