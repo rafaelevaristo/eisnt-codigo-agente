@@ -2,136 +2,1573 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Troubleshoot – Leitura de Passaporte</title>
 <style>
+:root{
+  --bg:#f4f6fb;
+  --surface:#ffffff;
+  --surface-2:#f8fafc;
+  --border:#dbe2ee;
+  --text:#0f172a;
+  --muted:#64748b;
+  --primary:#2563eb;
+  --primary-soft:#eff6ff;
+  --primary-border:#bfdbfe;
+  --success:#10b981;
+  --success-soft:#ecfdf5;
+  --success-border:#a7f3d0;
+  --danger:#ef4444;
+  --danger-soft:#fef2f2;
+  --warning:#f59e0b;
+  --shadow:0 6px 20px rgba(15,23,42,.08);
+  --shadow-sm:0 2px 6px rgba(15,23,42,.06);
+}
 *{box-sizing:border-box}
-body{font-family:Segoe UI,Arial,sans-serif;margin:0;background:#f0f2f5;color:#222}
-header{background:#1f3a5f;color:#fff;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-header h1{font-size:18px;margin:0;flex:1}
-button{cursor:pointer;border:0;border-radius:6px;padding:8px 14px;font-size:14px;background:#2d6cdf;color:#fff}
-button:hover{opacity:.9}
-button.sec{background:#6b7785}button.del{background:#c0392b}button.ok{background:#2e8b57}
-header button.tab{background:#ffffff22}header button.tab.active{background:#fff;color:#1f3a5f}
-main{max-width:900px;margin:20px auto;padding:0 16px}
-.card{background:#fff;border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px #0002}
-input[type=text],textarea,select{width:100%;padding:8px;border:1px solid #bbb;border-radius:6px;font:inherit}
-.opt{display:flex;gap:6px;margin:6px 0;align-items:center}
-.opt input{flex:1}
-.opt .go{background:#e8eefc;color:#2d6cdf;padding:8px 10px}
-.tag{font-size:12px;color:#666}
-.qhead{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-.start{background:#2e8b57;color:#fff;font-size:11px;padding:2px 8px;border-radius:10px}
-.step{border-left:4px solid #2d6cdf;margin-left:8px;padding-left:12px}
-.choice{display:block;width:100%;text-align:left;margin:6px 0;background:#eef3ff;color:#1f3a5f;border:2px solid #cfdcf8;padding:12px}
-.choice.sel{background:#2d6cdf;color:#fff;border-color:#2d6cdf}
-.result{background:#e6f6ec;border:2px solid #2e8b57;padding:12px;border-radius:8px;margin-top:6px}
-.hidden{display:none}
-.row{display:flex;gap:8px;flex-wrap:wrap}
+html,body{height:100%;margin:0;font-family:Inter,'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}
+.hidden{display:none!important}
+
+/* Header */
+header{
+  height:64px;
+  background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 100%);
+  color:#fff;
+  padding:0 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  box-shadow:0 2px 10px rgba(15,23,42,.15);
+  position:relative;
+  z-index:30;
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-badge{
+  width:38px;height:38px;border-radius:10px;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
+  display:grid;place-items:center;font-size:20px;
+}
+.brand h1{margin:0;font-size:17px;font-weight:700;letter-spacing:-.01em}
+.brand small{display:block;font-size:12px;color:rgba(255,255,255,.72)}
+
+.mode-switch{
+  display:flex;background:rgba(255,255,255,.12);padding:4px;border-radius:10px;gap:4px;
+  border:1px solid rgba(255,255,255,.16);
+}
+.mode-btn{
+  border:0;background:transparent;color:rgba(255,255,255,.85);
+  padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;gap:6px;transition:.18s ease;
+}
+.mode-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
+.mode-btn.active{background:#fff;color:#0f172a;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+
+/* Generic Buttons */
+.btn{
+  border:1px solid var(--border);background:var(--surface);color:var(--text);
+  padding:7px 12px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;transition:.15s ease;white-space:nowrap;
+}
+.btn:hover{background:var(--surface-2);border-color:#cbd5e1}
+.btn-primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn-primary:hover{background:#1d4ed8;border-color:#1d4ed8}
+.btn-success{background:var(--success);border-color:var(--success);color:#fff}
+.btn-success:hover{background:#059669;border-color:#059669}
+.btn-danger{background:#fff;border-color:#fecaca;color:var(--danger)}
+.btn-danger:hover{background:var(--danger-soft)}
+.btn-icon{padding:6px 8px;min-width:30px;justify-content:center}
+
+/* ================= USER VIEW ================= */
+.user-shell{
+  max-width:1180px;margin:0 auto;padding:24px 18px 48px;
+}
+.user-topbar{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:14px 18px;margin-bottom:20px;box-shadow:var(--shadow-sm);
+  display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+}
+.progress-info{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+  padding:5px 10px;border-radius:999px;background:var(--primary-soft);color:var(--primary);
+  border:1px solid var(--primary-border);
+}
+.pill.done{background:var(--success-soft);color:#047857;border-color:var(--success-border)}
+
+.user-grid{
+  display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:20px;align-items:start;
+}
+@media (max-width:920px){
+  .user-grid{grid-template-columns:1fr}
+}
+
+/* Timeline Stepper */
+.timeline{position:relative;display:flex;flex-direction:column;gap:18px}
+.step-card{
+  position:relative;display:flex;gap:14px;align-items:flex-start;
+  animation:fadeSlide .22s ease;
+}
+@keyframes fadeSlide{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.step-rail{
+  display:flex;flex-direction:column;align-items:center;align-self:stretch;flex-shrink:0;width:36px;
+}
+.step-dot{
+  width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
+  font-size:13px;font-weight:700;border:2px solid var(--primary);
+  background:var(--primary);color:#fff;box-shadow:0 3px 10px rgba(37,99,235,.22);z-index:2;
+}
+.step-card.answered .step-dot{
+  background:var(--success);border-color:var(--success);box-shadow:0 3px 10px rgba(16,185,129,.22);
+}
+.step-line{
+  flex:1;width:3px;background:linear-gradient(to bottom,#cbd5e1,#e2e8f0);
+  margin-top:6px;border-radius:3px;min-height:16px;
+}
+.step-card:last-child .step-line{display:none}
+.step-body{
+  flex:1;background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:18px 20px;box-shadow:var(--shadow-sm);transition:.2s ease;
+}
+.step-card.active .step-body{
+  border-color:var(--primary-border);box-shadow:0 8px 24px rgba(37,99,235,.09);
+}
+.step-meta{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;
+  font-size:12px;color:var(--muted);font-weight:600;
+}
+.step-question{font-size:17px;font-weight:700;color:var(--text);margin:0 0 14px;line-height:1.4}
+
+.choice-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.choice-btn{
+  text-align:left;padding:12px 14px;border-radius:12px;border:1.5px solid var(--border);
+  background:var(--surface-2);color:var(--text);cursor:pointer;
+  display:flex;align-items:center;gap:10px;transition:.16s ease;width:100%;
+}
+.choice-btn:hover{
+  border-color:var(--primary);background:var(--primary-soft);transform:translateY(-1px);
+}
+.choice-btn.selected{
+  border-color:var(--primary);background:var(--primary);color:#fff;
+  box-shadow:0 4px 12px rgba(37,99,235,.24);
+}
+.choice-letter{
+  width:26px;height:26px;border-radius:8px;flex-shrink:0;display:grid;place-items:center;
+  font-size:12px;font-weight:700;background:#fff;color:var(--primary);border:1px solid var(--primary-border);
+}
+.choice-btn.selected .choice-letter{
+  background:rgba(255,255,255,.22);color:#fff;border-color:rgba(255,255,255,.35);
+}
+.choice-text{flex:1;font-weight:600;font-size:14px;line-height:1.35}
+.choice-arrow{opacity:.6;font-size:14px}
+
+.result-box{
+  margin-top:14px;padding:16px 18px;border-radius:14px;
+  background:linear-gradient(135deg,#ecfdf5 0%,#f0fdf4 100%);
+  border:1.5px solid var(--success-border);
+  display:flex;gap:12px;align-items:flex-start;
+}
+.result-icon{
+  width:36px;height:36px;border-radius:10px;background:var(--success);color:#fff;
+  display:grid;place-items:center;font-size:18px;flex-shrink:0;
+}
+.result-content h4{margin:0 0 4px;font-size:14px;color:#065f46;text-transform:uppercase;letter-spacing:.03em}
+.result-content p{margin:0 0 12px;font-size:15px;color:#064e3b;line-height:1.45;font-weight:500}
+.end-box{
+  margin-top:14px;padding:12px 14px;border-radius:10px;background:#fffbeb;
+  border:1px solid #fde68a;color:#92400e;font-size:13px;font-weight:500;
+}
+
+/* User Path Map Sidebar */
+.path-panel{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:16px;box-shadow:var(--shadow-sm);position:sticky;top:20px;
+}
+.path-panel h3{margin:0 0 4px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
+.path-panel .sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+.mini-tree{display:flex;flex-direction:column;gap:0}
+.mt-node{
+  padding:9px 11px;border-radius:10px;border:1px solid var(--border);
+  background:var(--surface-2);font-size:12px;cursor:pointer;transition:.15s;
+}
+.mt-node:hover{border-color:var(--primary);background:var(--primary-soft)}
+.mt-node.current{border-color:var(--primary);background:var(--primary-soft)}
+.mt-q{font-weight:700;color:var(--text);display:block;margin-bottom:2px}
+.mt-a{color:var(--primary);font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.mt-conn{
+  width:2px;height:14px;background:#cbd5e1;margin-left:18px;
+}
+.mt-res{
+  padding:9px 11px;border-radius:10px;border:1px solid var(--success-border);
+  background:var(--success-soft);font-size:12px;color:#065f46;font-weight:600;
+}
+
+/* ================= ADMIN VIEW ================= */
+#adminView{
+  height:calc(100vh - 64px);
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  overflow:hidden;
+}
+.admin-toolbar{
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border);
+  padding:10px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  z-index:20;
+}
+.toolbar-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.toolbar-sep{width:1px;height:24px;background:var(--border);margin:0 2px}
+.start-picker{
+  display:flex;align-items:center;gap:6px;background:var(--surface-2);
+  border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:12px;font-weight:600;
+}
+.start-picker select{
+  border:0;background:transparent;font-size:12px;font-weight:600;color:var(--text);
+  max-width:190px;outline:none;cursor:pointer;
+}
+.zoom-pill{
+  display:inline-flex;align-items:center;background:var(--surface-2);
+  border:1px solid var(--border);border-radius:8px;overflow:hidden;
+}
+.zoom-pill button{
+  border:0;background:transparent;padding:6px 10px;cursor:pointer;font-weight:700;color:var(--text);
+}
+.zoom-pill button:hover{background:#e2e8f0}
+.zoom-pill span{font-size:12px;font-weight:700;padding:0 6px;min-width:46px;text-align:center;color:var(--muted)}
+
+/* Canvas Area (Miro-style) */
+.canvas-wrap{
+  position:relative;
+  flex:1;
+  overflow:hidden;
+  background-color:#f1f5f9;
+  background-image:radial-gradient(#cbd5e1 1.3px,transparent 1.3px);
+  background-size:24px 24px;
+  cursor:grab;
+  user-select:none;
+}
+.canvas-wrap.panning{cursor:grabbing}
+.canvas-wrap.connecting{cursor:crosshair}
+
+.canvas-stage{
+  position:absolute;
+  left:0;top:0;
+  transform-origin:0 0;
+  will-change:transform;
+}
+.edges-svg{
+  position:absolute;
+  left:0;top:0;
+  width:1px;height:1px;
+  overflow:visible;
+  pointer-events:none;
+  z-index:1;
+}
+.edge-group{pointer-events:stroke}
+.edge-hit{
+  fill:none;stroke:transparent;stroke-width:16;cursor:pointer;pointer-events:stroke;
+}
+.edge-path{
+  fill:none;stroke:#64748b;stroke-width:2.5;stroke-linecap:round;
+  transition:stroke .15s,stroke-width .15s;pointer-events:none;
+}
+.edge-group:hover .edge-path{stroke:var(--danger);stroke-width:3.5}
+.edge-arrow{fill:#64748b;transition:fill .15s;pointer-events:none}
+.edge-group:hover .edge-arrow{fill:var(--danger)}
+.edge-temp{
+  fill:none;stroke:var(--primary);stroke-width:2.8;stroke-dasharray:7 5;pointer-events:none;
+}
+
+.nodes-layer{
+  position:absolute;left:0;top:0;z-index:2;
+}
+
+/* Question Node Card */
+.q-node{
+  position:absolute;
+  width:320px;
+  background:var(--surface);
+  border:2px solid var(--border);
+  border-radius:14px;
+  box-shadow:var(--shadow);
+  transition:border-color .15s,box-shadow .15s;
+}
+.q-node.is-start{border-color:var(--success)}
+.q-node.drop-target{
+  border-color:var(--primary);
+  box-shadow:0 0 0 5px rgba(37,99,235,.22),var(--shadow);
+}
+.q-node.highlight{
+  border-color:var(--primary);
+  box-shadow:0 0 0 6px rgba(37,99,235,.28),var(--shadow);
+}
+
+.port-in{
+  position:absolute;
+  left:-9px;
+  top:20px;
+  width:16px;height:16px;border-radius:50%;
+  background:#fff;border:3px solid #64748b;
+  box-shadow:0 1px 4px rgba(0,0,0,.2);
+  z-index:4;
+}
+.q-node.is-start .port-in{border-color:var(--success)}
+.q-node.drop-target .port-in{border-color:var(--primary);background:var(--primary)}
+
+.node-header{
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  padding:8px 10px 8px 14px;
+  background:var(--surface-2);
+  border-bottom:1px solid var(--border);
+  border-radius:12px 12px 0 0;
+  cursor:grab;
+}
+.node-header:active{cursor:grabbing}
+.node-drag-title{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--muted)}
+.badge-start{
+  background:var(--success);color:#fff;font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:999px;letter-spacing:.03em;
+}
+.btn-mini{
+  border:1px solid var(--border);background:#fff;color:var(--muted);
+  border-radius:6px;padding:3px 7px;font-size:11px;font-weight:600;cursor:pointer;
+}
+.btn-mini:hover{color:var(--text);border-color:#94a3b8}
+.btn-mini.del:hover{color:var(--danger);border-color:#fecaca;background:var(--danger-soft)}
+
+.node-body{padding:10px 12px 12px;user-select:text}
+.node-q-input{
+  width:100%;border:1.5px solid var(--border);border-radius:8px;padding:7px 9px;
+  font-size:13px;font-weight:600;color:var(--text);background:#fff;resize:vertical;
+  min-height:46px;line-height:1.35;margin-bottom:10px;
+}
+.node-q-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+
+.node-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.node-opt-box{
+  position:relative;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:7px 8px;
+}
+.node-opt-row{
+  display:flex;align-items:center;gap:5px;
+}
+.node-opt-input{
+  flex:1;min-width:0;border:1px solid #cbd5e1;border-radius:6px;
+  padding:5px 7px;font-size:12px;font-weight:600;background:#fff;
+}
+.node-opt-input:focus{outline:none;border-color:var(--primary)}
+.opt-go-btn{
+  border:1px solid var(--primary-border);background:var(--primary-soft);color:var(--primary);
+  border-radius:6px;padding:4px 8px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;
+}
+.opt-go-btn:hover{background:var(--primary);color:#fff}
+.opt-del-btn{
+  border:0;background:transparent;color:#94a3b8;cursor:pointer;padding:3px 5px;
+  font-size:13px;border-radius:5px;flex-shrink:0;
+}
+.opt-del-btn:hover{color:var(--danger);background:var(--danger-soft)}
+
+.port-out{
+  position:absolute;
+  right:-11px;
+  top:14px;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--primary);border:3px solid #fff;
+  box-shadow:0 2px 6px rgba(37,99,235,.4);
+  cursor:crosshair;
+  z-index:5;
+  transition:transform .12s;
+}
+.port-out:hover{transform:scale(1.22);background:#1d4ed8}
+.port-out.unlinked{background:#94a3b8;box-shadow:0 2px 5px rgba(15,23,42,.25)}
+.port-out.unlinked:hover{background:var(--primary)}
+
+.opt-sub{
+  margin-top:6px;display:flex;align-items:center;gap:6px;
+}
+.opt-link-chip{
+  flex:1;display:flex;align-items:center;justify-content:space-between;gap:6px;
+  font-size:11px;background:var(--primary-soft);color:#1e40af;
+  border:1px solid var(--primary-border);border-radius:6px;padding:3px 7px;
+  overflow:hidden;
+}
+.opt-link-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.opt-unlink{
+  border:0;background:transparent;color:#1e40af;font-weight:700;cursor:pointer;padding:0 3px;
+}
+.opt-unlink:hover{color:var(--danger)}
+.opt-res-input{
+  width:100%;border:1px solid var(--success-border);background:var(--success-soft);
+  color:#065f46;border-radius:6px;padding:5px 7px;font-size:11.5px;font-weight:500;
+}
+.opt-res-input:focus{outline:none;border-color:var(--success)}
+
+.node-add-opt{
+  width:100%;border:1.5px dashed #cbd5e1;background:transparent;color:var(--muted);
+  border-radius:8px;padding:6px;font-size:12px;font-weight:600;cursor:pointer;
+}
+.node-add-opt:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+
+/* Canvas Hints & Minimap */
+.canvas-hint{
+  position:absolute;left:16px;bottom:16px;z-index:15;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(6px);
+  border:1px solid var(--border);border-radius:10px;padding:8px 12px;
+  font-size:11.5px;color:var(--muted);box-shadow:var(--shadow-sm);
+  pointer-events:none;max-width:420px;line-height:1.45;
+}
+.canvas-hint b{color:var(--text)}
+
+.minimap{
+  position:absolute;right:16px;bottom:16px;z-index:18;
+  width:228px;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);
+  border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.minimap-head{
+  padding:5px 10px;font-size:11px;font-weight:700;color:var(--muted);
+  background:var(--surface-2);border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+}
+#minimapCanvas{
+  display:block;width:228px;height:146px;cursor:pointer;
+}
+
+/* List View (Optional toggle inside Admin) */
+.list-wrap{
+  flex:1;overflow:auto;padding:20px;
+}
+.list-container{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.list-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:16px;box-shadow:var(--shadow-sm);
+}
+.list-card.is-start{border-color:var(--success)}
+.list-head{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.list-head input{
+  flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-weight:600;
+}
+.list-opt{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.list-opt input[type=text]{flex:1;min-width:180px;padding:7px 9px;border:1px solid var(--border);border-radius:7px}
+.list-opt select{padding:7px 9px;border:1px solid var(--border);border-radius:7px;max-width:230px}
 </style>
 </head>
 <body>
+
 <header>
-<h1>🛂 Troubleshoot – Leitura de Passaporte</h1>
-<button class="tab active" id="tabU" onclick="show('user')">Utilizador</button>
-<button class="tab" id="tabA" onclick="show('admin')">Gestão</button>
+  <div class="brand">
+    <div class="brand-badge">🛂</div>
+    <div>
+      <h1>Troubleshoot – Leitura de Passaporte</h1>
+      <small>Diagnóstico guiado &amp; editor visual de fluxos</small>
+    </div>
+  </div>
+  <div class="mode-switch">
+    <button class="mode-btn active" id="tabUser" onclick="switchMode('user')">👤 Utilizador</button>
+    <button class="mode-btn" id="tabAdmin" onclick="switchMode('admin')">🗺️ Gestão</button>
+  </div>
 </header>
-<main>
-<section id="user"></section>
-<section id="admin" class="hidden">
- <div class="card row">
-  <button onclick="addQ()">+ Nova pergunta</button>
-  <button class="ok" onclick="exportJ()">Exportar JSON</button>
-  <button class="sec" onclick="document.getElementById('file').click()">Importar JSON</button>
-  <input type="file" id="file" accept=".json" class="hidden" onchange="importJ(event)">
-  <button class="del" onclick="if(confirm('Repor fluxo de exemplo?')){data=sample();save();renderA()}">Repor exemplo</button>
- </div>
- <div class="card"><label>Pergunta inicial:</label><select id="startSel" onchange="data.start=this.value;save()"></select></div>
- <div id="qs"></div>
+
+<!-- ================= USER VIEW ================= -->
+<main id="userView" class="user-shell"></main>
+
+<!-- ================= ADMIN VIEW ================= -->
+<section id="adminView" class="hidden">
+  <div class="admin-toolbar">
+    <div class="toolbar-group">
+      <button class="btn btn-primary" onclick="addQuestionAtCenter()">＋ Nova pergunta</button>
+      <button class="btn" onclick="autoLayout();fitView();save();renderAdmin()">✨ Auto-organizar</button>
+      <button class="btn" id="fitBtn" onclick="fitView()">⛶ Ajustar</button>
+      <div class="zoom-pill" id="zoomControls">
+        <button onclick="zoomStep(-0.15)" title="Reduzir zoom">−</button>
+        <span id="zoomLabel" onclick="resetZoom()" title="Repor 100%" style="cursor:pointer">100%</span>
+        <button onclick="zoomStep(0.15)" title="Aumentar zoom">+</button>
+      </div>
+      <div class="toolbar-sep"></div>
+      <div class="start-picker">
+        <span>🚩 Início:</span>
+        <select id="startSel" onchange="data.start=this.value;save();renderAdmin()"></select>
+      </div>
+    </div>
+
+    <div class="toolbar-group">
+      <button class="btn" id="toggleSubViewBtn" onclick="toggleAdminSubView()">📋 Vista Lista</button>
+      <div class="toolbar-sep"></div>
+      <button class="btn btn-success" onclick="exportJSON()">⬇ Exportar JSON</button>
+      <button class="btn" onclick="document.getElementById('fileInput').click()">⬆ Importar JSON</button>
+      <input type="file" id="fileInput" accept=".json" class="hidden" onchange="importJSON(event)">
+      <button class="btn btn-danger" onclick="resetSample()">↺ Repor exemplo</button>
+    </div>
+  </div>
+
+  <!-- Interactive Miro-style Canvas -->
+  <div id="canvasWrap" class="canvas-wrap">
+    <div id="canvasStage" class="canvas-stage">
+      <svg id="edgesSvg" class="edges-svg"></svg>
+      <div id="nodesLayer" class="nodes-layer"></div>
+    </div>
+
+    <div class="canvas-hint">
+      <b>Dicas do Canvas:</b> Arraste os cartões pelo cabeçalho · Arraste o ponto azul <b>●</b> de uma resposta até outro cartão (ou largue no vazio para criar a pergunta seguinte) · Clique em <b>➜</b> para criar/ir para a próxima pergunta · Clique numa linha para desligar · Roda do rato faz zoom.
+    </div>
+
+    <div class="minimap" id="minimapBox">
+      <div class="minimap-head">
+        <span>Minimap</span>
+        <span id="minimapCount">0 nós</span>
+      </div>
+      <canvas id="minimapCanvas" width="228" height="146"></canvas>
+    </div>
+  </div>
+
+  <!-- Optional List View -->
+  <div id="listWrap" class="list-wrap hidden">
+    <div id="listContainer" class="list-container"></div>
+  </div>
 </section>
-</main>
+
 <script>
-const KEY='ts_passaporte_v1';
-const uid=()=>'q'+Math.random().toString(36).slice(2,8);
-function sample(){return{start:'q1',questions:{
- q1:{text:'O leitor de passaportes está ligado e com luz acesa?',options:[{text:'Sim',next:'q2'},{text:'Não',next:'q3'}]},
- q2:{text:'A aplicação deteta o passaporte quando é colocado?',options:[{text:'Sim, mas falha a leitura',next:'q4'},{text:'Não deteta',next:null,result:'Limpe o vidro do leitor e reinicie o serviço do leitor.'}]},
- q3:{text:'O cabo USB está bem ligado?',options:[{text:'Sim',next:null,result:'Teste outra porta USB ou outro cabo; se persistir, substitua o leitor.'},{text:'Não',next:null,result:'Ligue o cabo USB e aguarde 10 segundos.'}]},
- q4:{text:'A zona MRZ do passaporte está limpa e bem posicionada?',options:[{text:'Sim',next:null,result:'Escalar para suporte: recolher logs da aplicação.'},{text:'Não',next:null,result:'Limpe o documento e coloque-o alinhado com a marca do leitor.'}]}
-}}}
-let data=JSON.parse(localStorage.getItem(KEY)||'null')||sample();
-const save=()=>localStorage.setItem(KEY,JSON.stringify(data));
-const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function show(v){user.classList.toggle('hidden',v!='user');admin.classList.toggle('hidden',v!='admin');
- tabU.classList.toggle('active',v=='user');tabA.classList.toggle('active',v=='admin');
- v=='user'?startU():renderA()}
+const STORAGE_KEY = 'ts_passaporte_v2';
+const NODE_WIDTH = 320;
+const uid = () => 'q' + Math.random().toString(36).slice(2, 8);
 
-/* ---------- Utilizador ---------- */
-let path=[];
-function startU(){path=data.questions[data.start]?[{q:data.start,sel:null}]:[];renderU()}
-function renderU(){
- let h='<div class="card"><button class="sec" onclick="startU()">↺ Recomeçar</button></div>';
- if(!path.length)h+='<div class="card">Sem perguntas configuradas. Use a Gestão.</div>';
- path.forEach((p,i)=>{
-  const q=data.questions[p.q];if(!q)return;
-  h+=`<div class="card step"><b>${i+1}. ${esc(q.text)}</b>`;
-  q.options.forEach((o,j)=>h+=`<button class="choice ${p.sel===j?'sel':''}" onclick="pick(${i},${j})">${esc(o.text)}</button>`);
-  if(p.sel!=null){const o=q.options[p.sel];
-   if(o.result)h+=`<div class="result">✅ ${esc(o.result)}</div>`;
-   else if(!o.next||!data.questions[o.next])h+='<div class="tag">Fim do fluxo.</div>';}
-  h+='</div>';});
- user.innerHTML=h}
-function pick(i,j){
- path=path.slice(0,i+1);path[i].sel=j;
- const o=data.questions[path[i].q].options[j];
- if(o.next&&data.questions[o.next]&&!path.some(p=>p.q==o.next))path.push({q:o.next,sel:null});
- renderU()}
+function createSampleData() {
+  return {
+    start: 'q1',
+    questions: {
+      q1: {
+        text: 'O leitor de passaportes está ligado e com luz de estado acesa?',
+        x: 60, y: 180,
+        options: [
+          { text: 'Sim, luz acesa', next: 'q2', result: '' },
+          { text: 'Não acende nenhuma luz', next: 'q3', result: '' }
+        ]
+      },
+      q2: {
+        text: 'A aplicação deteta automaticamente o passaporte quando colocado no vidro?',
+        x: 450, y: 80,
+        options: [
+          { text: 'Deteta, mas falha a leitura da página', next: 'q4', result: '' },
+          { text: 'Não deteta o documento', next: 'q5', result: '' }
+        ]
+      },
+      q3: {
+        text: 'O cabo USB e a alimentação estão firmemente ligados?',
+        x: 450, y: 340,
+        options: [
+          { text: 'Sim, está tudo ligado', next: null, result: 'Teste noutra porta USB direta ao PC (evite hubs) e verifique se o LED acende. Se não acender, substitua o cabo/leitor.' },
+          { text: 'Estava desligado / solto', next: null, result: 'Ligue firmemente o cabo USB, aguarde 10 segundos pelo reconhecimento do Windows e tente nova leitura.' }
+        ]
+      },
+      q4: {
+        text: 'A zona MRZ (códigos em baixo) do passaporte está limpa e alinhada na marca?',
+        x: 840, y: 40,
+        options: [
+          { text: 'Sim, está bem alinhada e limpa', next: null, result: 'Recolha os logs da aplicação de leitura e escale o ticket para o suporte técnico de nível 2.' },
+          { text: 'Tem sujidade, reflexo ou está torta', next: null, result: 'Limpe o vidro do leitor com pano microfibra, retire capas plásticas do passaporte e encoste-o à guia.' }
+        ]
+      },
+      q5: {
+        text: 'O serviço do leitor aparece em execução no sistema?',
+        x: 840, y: 260,
+        options: [
+          { text: 'Sim, serviço ativo', next: null, result: 'Feche a aplicação de leitura, desconecte e volte a ligar o leitor por USB e reabra a aplicação.' },
+          { text: 'Não / Não sei verificar', next: null, result: 'Reinicie o serviço "PassportReaderService" (ou reinicie o posto de trabalho) e volte a testar.' }
+        ]
+      }
+    }
+  };
+}
 
-/* ---------- Gestão ---------- */
-function addQ(){const id=uid();data.questions[id]={text:'Nova pergunta',options:[]};if(!data.start)data.start=id;save();renderA()}
-function delQ(id){if(!confirm('Apagar pergunta?'))return;delete data.questions[id];
- Object.values(data.questions).forEach(q=>q.options.forEach(o=>{if(o.next===id)o.next=null}));
- if(data.start===id)data.start=Object.keys(data.questions)[0]||'';save();renderA()}
-function addO(id){data.questions[id].options.push({text:'Nova opção',next:null});save();renderA()}
-function delO(id,j){data.questions[id].options.splice(j,1);save();renderA()}
-function setQ(id,v){data.questions[id].text=v;save();refreshSel()}
-function setO(id,j,v){data.questions[id].options[j].text=v;save()}
-function setR(id,j,v){data.questions[id].options[j].result=v;save()}
-/* ícone → cria (ou abre) a pergunta seguinte */
-function goNext(id,j){const o=data.questions[id].options[j];
- if(!o.next||!data.questions[o.next]){const n=uid();data.questions[n]={text:'Nova pergunta',options:[]};o.next=n;save();renderA();
-  setTimeout(()=>{const e=document.getElementById('c_'+n);e.scrollIntoView({behavior:'smooth',block:'center'});e.querySelector('input').focus()},50)}
- else{const e=document.getElementById('c_'+o.next);e.scrollIntoView({behavior:'smooth',block:'center'});e.style.outline='3px solid #2d6cdf';setTimeout(()=>e.style.outline='',1500)}}
-function setNext(id,j,v){data.questions[id].options[j].next=v||null;save();renderA()}
-function refreshSel(){startSel.innerHTML=Object.entries(data.questions).map(([k,q])=>`<option value="${k}" ${k==data.start?'selected':''}>${esc(q.text)}</option>`).join('')}
-function renderA(){
- refreshSel();
- const opts=(cur)=>'<option value="">— sem pergunta seguinte —</option>'+Object.entries(data.questions).map(([k,q])=>`<option value="${k}" ${k==cur?'selected':''}>${esc(q.text).slice(0,50)}</option>`).join('');
- qs.innerHTML=Object.entries(data.questions).map(([id,q])=>`
- <div class="card" id="c_${id}">
-  <div class="qhead"><input type="text" value="${esc(q.text)}" oninput="setQ('${id}',this.value)">
-   ${id==data.start?'<span class="start">INÍCIO</span>':''}
-   <button class="del" title="Apagar pergunta" onclick="delQ('${id}')">🗑</button></div>
-  ${q.options.map((o,j)=>`
-   <div class="opt"><input type="text" value="${esc(o.text)}" placeholder="Resposta" oninput="setO('${id}',${j},this.value)">
-    <button class="go" title="Ir para / criar pergunta seguinte" onclick="goNext('${id}',${j})">➜</button>
-    <select style="width:200px" onchange="setNext('${id}',${j},this.value)">${opts(o.next)}</select>
-    <button class="del" onclick="delO('${id}',${j})">✕</button></div>
-   ${o.next?'':`<input type="text" style="margin-bottom:6px" value="${esc(o.result||'')}" placeholder="Solução/resultado final (se não houver pergunta seguinte)" oninput="setR('${id}',${j},this.value)">`}
-  `).join('')}
-  <button class="sec" onclick="addO('${id}')">+ Resposta</button>
- </div>`).join('')}
-function exportJ(){const a=document.createElement('a');
- a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
- a.download='troubleshoot-passaporte.json';a.click()}
-function importJ(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();
- r.onload=()=>{try{const d=JSON.parse(r.result);
-  if(!d.questions||typeof d.questions!=='object')throw 0;
-  Object.values(d.questions).forEach(q=>{if(!Array.isArray(q.options))q.options=[]});
-  if(!d.questions[d.start])d.start=Object.keys(d.questions)[0]||'';
-  data=d;save();renderA();alert('Importado com sucesso.')}catch{alert('JSON inválido.')}
-  e.target.value=''};r.readAsText(f)}
-startU();
+let data = loadData();
+let currentMode = 'user'; // 'user' | 'admin'
+let adminSubView = 'canvas'; // 'canvas' | 'list'
+let hasFittedOnce = false;
+
+// Canvas viewport state
+let panX = 40;
+let panY = 40;
+let zoom = 1;
+
+// Interaction state
+let dragNodeState = null; // { id, startClientX, startClientY, origX, origY }
+let panState = null;      // { startClientX, startClientY, origPanX, origPanY }
+let linkState = null;     // { fromId, optIndex, x1, y1, x2, y2, moved, hoverTargetId }
+let minimapDrag = false;
+let minimapTransform = null;
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('ts_passaporte_v1');
+    if (raw) {
+      const parsed = normalizeData(JSON.parse(raw));
+      return parsed;
+    }
+  } catch (e) {}
+  return createSampleData();
+}
+
+function normalizeData(d) {
+  if (!d || typeof d !== 'object' || !d.questions || typeof d.questions !== 'object') {
+    return createSampleData();
+  }
+  let missingCoords = false;
+  for (const [id, q] of Object.entries(d.questions)) {
+    if (!q || typeof q !== 'object') {
+      delete d.questions[id];
+      continue;
+    }
+    if (typeof q.text !== 'string') q.text = '';
+    if (!Array.isArray(q.options)) q.options = [];
+    q.options = q.options.map(o => ({
+      text: String(o?.text ?? ''),
+      next: o?.next && d.questions[o.next] ? o.next : null,
+      result: String(o?.result ?? '')
+    }));
+    if (!Number.isFinite(q.x) || !Number.isFinite(q.y)) {
+      missingCoords = true;
+    }
+  }
+  const ids = Object.keys(d.questions);
+  if (!d.start || !d.questions[d.start]) {
+    d.start = ids[0] || '';
+  }
+  if (missingCoords) {
+    autoLayout(d);
+  }
+  return d;
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+function autoLayout(targetData = data) {
+  const qs = targetData.questions;
+  const ids = Object.keys(qs);
+  if (!ids.length) return;
+
+  const levels = {};
+  const queue = [];
+  if (targetData.start && qs[targetData.start]) {
+    levels[targetData.start] = 0;
+    queue.push(targetData.start);
+  }
+  while (queue.length) {
+    const cur = queue.shift();
+    const q = qs[cur];
+    if (!q) continue;
+    for (const o of q.options) {
+      if (o.next && qs[o.next] && levels[o.next] === undefined) {
+        levels[o.next] = levels[cur] + 1;
+        queue.push(o.next);
+      }
+    }
+  }
+  // Orphans
+  let maxDepth = Math.max(0, ...Object.values(levels));
+  for (const id of ids) {
+    if (levels[id] === undefined) {
+      levels[id] = maxDepth + 1;
+    }
+  }
+
+  const byLevel = {};
+  for (const id of ids) {
+    const lv = levels[id];
+    if (!byLevel[lv]) byLevel[lv] = [];
+    byLevel[lv].push(id);
+  }
+
+  const colGap = 390;
+  const rowGap = 280;
+  for (const [lvStr, group] of Object.entries(byLevel)) {
+    const lv = Number(lvStr);
+    const totalH = (group.length - 1) * rowGap;
+    const startY = Math.max(60, 260 - totalH / 2);
+    group.forEach((id, idx) => {
+      qs[id].x = 60 + lv * colGap;
+      qs[id].y = Math.round(startY + idx * rowGap);
+    });
+  }
+}
+
+/* ================= NAVIGATION ================= */
+function switchMode(mode) {
+  currentMode = mode;
+  document.getElementById('userView').classList.toggle('hidden', mode !== 'user');
+  document.getElementById('adminView').classList.toggle('hidden', mode !== 'admin');
+  document.getElementById('tabUser').classList.toggle('active', mode === 'user');
+  document.getElementById('tabAdmin').classList.toggle('active', mode === 'admin');
+  if (mode === 'user') {
+    startUserFlow();
+  } else {
+    renderAdmin();
+    requestAnimationFrame(() => {
+      if (!hasFittedOnce) {
+        fitView();
+        hasFittedOnce = true;
+      } else {
+        updateCanvasTransform();
+      }
+      renderEdges();
+      renderMinimap();
+    });
+  }
+}
+
+function toggleAdminSubView() {
+  adminSubView = adminSubView === 'canvas' ? 'list' : 'canvas';
+  const isCanvas = adminSubView === 'canvas';
+  document.getElementById('canvasWrap').classList.toggle('hidden', !isCanvas);
+  document.getElementById('listWrap').classList.toggle('hidden', isCanvas);
+  document.getElementById('fitBtn').classList.toggle('hidden', !isCanvas);
+  document.getElementById('zoomControls').classList.toggle('hidden', !isCanvas);
+  document.getElementById('toggleSubViewBtn').textContent = isCanvas ? '📋 Vista Lista' : '🗺️ Vista Canvas';
+  renderAdmin();
+}
+
+/* ================= USER VIEW ================= */
+let userPath = [];
+
+function startUserFlow() {
+  userPath = data.start && data.questions[data.start] ? [{ qId: data.start, sel: null }] : [];
+  renderUserView();
+}
+
+function pickUserOption(stepIdx, optIdx) {
+  userPath = userPath.slice(0, stepIdx + 1);
+  userPath[stepIdx].sel = optIdx;
+  const q = data.questions[userPath[stepIdx].qId];
+  const opt = q?.options[optIdx];
+  if (opt && opt.next && data.questions[opt.next]) {
+    if (!userPath.some(s => s.qId === opt.next)) {
+      userPath.push({ qId: opt.next, sel: null });
+    }
+  }
+  renderUserView();
+}
+
+function jumpToStep(stepIdx) {
+  userPath = userPath.slice(0, stepIdx + 1);
+  userPath[stepIdx].sel = null;
+  renderUserView();
+}
+
+function renderUserView() {
+  const container = document.getElementById('userView');
+  const lastStep = userPath[userPath.length - 1];
+  const lastOpt = lastStep && lastStep.sel !== null ? data.questions[lastStep.qId]?.options[lastStep.sel] : null;
+  const isSolved = Boolean(lastOpt && lastOpt.result);
+
+  let html = `
+    <div class="user-topbar">
+      <div class="progress-info">
+        <span class="pill ${isSolved ? 'done' : ''}">
+          ${isSolved ? '✅ Diagnóstico concluído' : `🧭 Passo ${Math.max(1, userPath.length)}`}
+        </span>
+        <span style="font-size:13px;color:var(--muted)">
+          Siga as perguntas abaixo clicando na opção correspondente ao estado do leitor.
+        </span>
+      </div>
+      <button class="btn" onclick="startUserFlow()">↺ Recomeçar</button>
+    </div>
+  `;
+
+  if (!userPath.length) {
+    html += `<div class="step-body">Sem perguntas configuradas. Aceda ao separador <b>Gestão</b> para criar o fluxo.</div>`;
+    container.innerHTML = html;
+    return;
+  }
+
+  html += `<div class="user-grid"><div class="timeline">`;
+
+  userPath.forEach((step, idx) => {
+    const q = data.questions[step.qId];
+    if (!q) return;
+    const answered = step.sel !== null;
+    const isActive = idx === userPath.length - 1 && !isSolved;
+    html += `
+      <div class="step-card ${answered ? 'answered' : ''} ${isActive ? 'active' : ''}">
+        <div class="step-rail">
+          <div class="step-dot">${answered ? '✓' : idx + 1}</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-meta">
+            <span>PERGUNTA ${idx + 1}</span>
+            <span>${answered ? 'Respondida' : 'A aguardar seleção'}</span>
+          </div>
+          <h2 class="step-question">${esc(q.text || 'Pergunta sem texto')}</h2>
+          <div class="choice-list">
+            ${q.options.map((o, j) => {
+              const letter = String.fromCharCode(65 + (j % 26));
+              const sel = step.sel === j;
+              return `
+                <button class="choice-btn ${sel ? 'selected' : ''}" onclick="pickUserOption(${idx}, ${j})">
+                  <span class="choice-letter">${letter}</span>
+                  <span class="choice-text">${esc(o.text || 'Opção sem texto')}</span>
+                  <span class="choice-arrow">${sel ? '●' : '➜'}</span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+    `;
+
+    if (answered) {
+      const opt = q.options[step.sel];
+      if (opt?.result) {
+        html += `
+          <div class="result-box">
+            <div class="result-icon">✓</div>
+            <div class="result-content">
+              <h4>Solução Recomendada</h4>
+              <p>${esc(opt.result)}</p>
+              <button class="btn btn-success" onclick="startUserFlow()">↺ Iniciar novo diagnóstico</button>
+            </div>
+          </div>
+        `;
+      } else if (!opt?.next || !data.questions[opt.next]) {
+        html += `<div class="end-box">Fim do caminho configurado (sem próxima pergunta nem solução definida).</div>`;
+      } else if (userPath.some((p, pIdx) => pIdx <= idx && p.qId === opt.next)) {
+        html += `<div class="end-box">Esta opção aponta para uma pergunta já respondida anteriormente (ciclo detetado).</div>`;
+      }
+    }
+
+    html += `</div></div>`;
+  });
+
+  html += `</div>`;
+
+  // Sidebar visual path map
+  html += `
+    <aside class="path-panel">
+      <h3>🗺️ Mapa do Percurso</h3>
+      <div class="sub">Clique num passo anterior para alterar a resposta.</div>
+      <div class="mini-tree">
+  `;
+  userPath.forEach((step, idx) => {
+    const q = data.questions[step.qId];
+    if (!q) return;
+    const opt = step.sel !== null ? q.options[step.sel] : null;
+    if (idx > 0) html += `<div class="mt-conn"></div>`;
+    html += `
+      <div class="mt-node ${idx === userPath.length - 1 ? 'current' : ''}" onclick="jumpToStep(${idx})">
+        <span class="mt-q">${idx + 1}. ${esc(q.text)}</span>
+        ${opt ? `<span class="mt-a">↳ ${esc(opt.text)}</span>` : `<span style="color:var(--muted)">A selecionar...</span>`}
+      </div>
+    `;
+    if (opt && opt.result) {
+      html += `<div class="mt-conn"></div><div class="mt-res">✅ ${esc(opt.result)}</div>`;
+    }
+  });
+  html += `</div></aside></div>`;
+
+  container.innerHTML = html;
+}
+
+/* ================= ADMIN VIEW ================= */
+function refreshStartPicker() {
+  const sel = document.getElementById('startSel');
+  sel.innerHTML = Object.entries(data.questions).map(([id, q]) =>
+    `<option value="${id}" ${id === data.start ? 'selected' : ''}>${esc(q.text || '(Sem título)').slice(0, 48)}</option>`
+  ).join('');
+}
+
+function renderAdmin() {
+  refreshStartPicker();
+  if (adminSubView === 'canvas') {
+    renderCanvasNodes();
+    renderEdges();
+    renderMinimap();
+  } else {
+    renderListView();
+  }
+}
+
+function renderCanvasNodes() {
+  const layer = document.getElementById('nodesLayer');
+  const entries = Object.entries(data.questions);
+  document.getElementById('minimapCount').textContent = `${entries.length} ${entries.length === 1 ? 'nó' : 'nós'}`;
+
+  layer.innerHTML = entries.map(([id, q]) => {
+    const isStart = id === data.start;
+    return `
+      <div class="q-node ${isStart ? 'is-start' : ''}" id="node_${id}" data-qid="${id}" style="left:${q.x}px;top:${q.y}px">
+        <div class="port-in" title="Entrada da pergunta"></div>
+        <div class="node-header" onmousedown="startNodeDrag(event, '${id}')">
+          <div class="node-drag-title">
+            <span>⠿</span>
+            <span>PERGUNTA</span>
+            ${isStart ? `<span class="badge-start">INÍCIO</span>` : ''}
+          </div>
+          <div style="display:flex;gap:4px">
+            ${!isStart ? `<button class="btn-mini" title="Definir como pergunta inicial" onclick="setStartQuestion('${id}')">🚩 Início</button>` : ''}
+            <button class="btn-mini del" title="Apagar pergunta" onclick="deleteQuestion('${id}')">🗑</button>
+          </div>
+        </div>
+        <div class="node-body" onmousedown="event.stopPropagation()">
+          <textarea class="node-q-input" placeholder="Escreva a pergunta..." oninput="updateQuestionText('${id}', this.value); renderEdges()" onmouseup="renderEdges()">${esc(q.text)}</textarea>
+          <div class="node-opts">
+            ${q.options.map((o, j) => {
+              const targetQ = o.next ? data.questions[o.next] : null;
+              return `
+                <div class="node-opt-box">
+                  <div class="node-opt-row">
+                    <input class="node-opt-input" type="text" value="${esc(o.text)}" placeholder="Texto da resposta..." oninput="updateOptionText('${id}', ${j}, this.value)">
+                    <button class="opt-go-btn" title="${targetQ ? 'Ir para pergunta seguinte' : 'Criar pergunta seguinte'}" onclick="goOrCreateNext('${id}', ${j})">➜</button>
+                    <button class="opt-del-btn" title="Remover resposta" onclick="deleteOption('${id}', ${j})">✕</button>
+                  </div>
+                  <div class="port-out ${targetQ ? '' : 'unlinked'}" title="Arraste para ligar a uma pergunta (ou largue no vazio para criar)" onmousedown="startLinkDrag(event, '${id}', ${j})"></div>
+                  <div class="opt-sub">
+                    ${targetQ
+                      ? `<div class="opt-link-chip" title="Ligado a: ${esc(targetQ.text)}">
+                           <span data-target-label="${o.next}" onclick="focusNode('${o.next}')" style="cursor:pointer">↳ ${esc(targetQ.text || 'Pergunta seguinte')}</span>
+                           <button class="opt-unlink" title="Desligar" onclick="unlinkOption('${id}', ${j})">×</button>
+                         </div>`
+                      : `<input class="opt-res-input" type="text" value="${esc(o.result || '')}" placeholder="✅ Solução final (se terminar aqui)" oninput="updateOptionResult('${id}', ${j}, this.value)">`
+                    }
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+          <button class="node-add-opt" onclick="addOption('${id}')">＋ Adicionar resposta</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function getPortOutWorldPos(qId, optIdx) {
+  const q = data.questions[qId];
+  const nodeEl = document.getElementById('node_' + qId);
+  if (!q || !nodeEl) return { x: (q?.x || 0) + NODE_WIDTH, y: (q?.y || 0) + 120 };
+  const ports = nodeEl.querySelectorAll('.port-out');
+  const port = ports[optIdx];
+  if (!port) return { x: q.x + NODE_WIDTH, y: q.y + 120 };
+  const optBox = port.closest('.node-opt-box');
+  return {
+    x: q.x + nodeEl.offsetWidth + 2,
+    y: q.y + optBox.offsetTop + 23
+  };
+}
+
+function getPortInWorldPos(qId) {
+  const q = data.questions[qId];
+  if (!q) return { x: 0, y: 0 };
+  return { x: q.x - 2, y: q.y + 28 };
+}
+
+function makeBezierPath(x1, y1, x2, y2) {
+  const dx = Math.max(60, Math.abs(x2 - x1) * 0.55);
+  return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+}
+
+function renderEdges() {
+  const svg = document.getElementById('edgesSvg');
+  if (!svg) return;
+  let html = '';
+
+  for (const [id, q] of Object.entries(data.questions)) {
+    q.options.forEach((o, j) => {
+      if (!o.next || !data.questions[o.next]) return;
+      const p1 = getPortOutWorldPos(id, j);
+      const p2 = getPortInWorldPos(o.next);
+      const d = makeBezierPath(p1.x, p1.y, p2.x, p2.y);
+      const arrow = `M ${p2.x - 8} ${p2.y - 5} L ${p2.x} ${p2.y} L ${p2.x - 8} ${p2.y + 5} Z`;
+      html += `
+        <g class="edge-group" onclick="unlinkOption('${id}', ${j})" onmousedown="event.stopPropagation()">
+          <path class="edge-hit" d="${d}"><title>Clique para desligar esta ligação</title></path>
+          <path class="edge-path" d="${d}"></path>
+          <path class="edge-arrow" d="${arrow}"></path>
+        </g>
+      `;
+    });
+  }
+
+  if (linkState) {
+    const d = makeBezierPath(linkState.x1, linkState.y1, linkState.x2, linkState.y2);
+    html += `<path class="edge-temp" d="${d}"></path>`;
+  }
+
+  svg.innerHTML = html;
+}
+
+/* ================= CANVAS TRANSFORM, PAN & ZOOM ================= */
+function updateCanvasTransform() {
+  const stage = document.getElementById('canvasStage');
+  const wrap = document.getElementById('canvasWrap');
+  if (!stage || !wrap) return;
+  stage.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+  const gridStep = 24 * zoom;
+  wrap.style.backgroundSize = `${gridStep}px ${gridStep}px`;
+  wrap.style.backgroundPosition = `${panX}px ${panY}px`;
+  document.getElementById('zoomLabel').textContent = Math.round(zoom * 100) + '%';
+  renderMinimap();
+}
+
+function screenToWorld(clientX, clientY) {
+  const rect = document.getElementById('canvasWrap').getBoundingClientRect();
+  return {
+    x: (clientX - rect.left - panX) / zoom,
+    y: (clientY - rect.top - panY) / zoom
+  };
+}
+
+function zoomAt(newZoom, clientX, clientY) {
+  const clamped = Math.min(2, Math.max(0.25, newZoom));
+  const wrap = document.getElementById('canvasWrap');
+  const rect = wrap.getBoundingClientRect();
+  const cx = clientX !== undefined ? clientX - rect.left : rect.width / 2;
+  const cy = clientY !== undefined ? clientY - rect.top : rect.height / 2;
+  const wx = (cx - panX) / zoom;
+  const wy = (cy - panY) / zoom;
+  zoom = clamped;
+  panX = cx - wx * zoom;
+  panY = cy - wy * zoom;
+  updateCanvasTransform();
+}
+
+function zoomStep(delta) {
+  zoomAt(zoom + delta);
+}
+
+function resetZoom() {
+  zoomAt(1);
+}
+
+function fitView() {
+  const wrap = document.getElementById('canvasWrap');
+  const qs = Object.entries(data.questions);
+  if (!wrap || !qs.length) return;
+
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  qs.forEach(([id, q]) => {
+    const el = document.getElementById('node_' + id);
+    const w = el ? el.offsetWidth : NODE_WIDTH;
+    const h = el ? el.offsetHeight : 220;
+    minX = Math.min(minX, q.x);
+    minY = Math.min(minY, q.y);
+    maxX = Math.max(maxX, q.x + w);
+    maxY = Math.max(maxY, q.y + h);
+  });
+
+  const pad = 60;
+  const contentW = Math.max(200, maxX - minX + pad * 2);
+  const contentH = Math.max(200, maxY - minY + pad * 2);
+  const rect = wrap.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+
+  zoom = Math.min(1.15, Math.max(0.25, Math.min(rect.width / contentW, rect.height / contentH)));
+  panX = (rect.width - (maxX - minX) * zoom) / 2 - minX * zoom;
+  panY = (rect.height - (maxY - minY) * zoom) / 2 - minY * zoom;
+  updateCanvasTransform();
+}
+
+function focusNode(id) {
+  const q = data.questions[id];
+  const wrap = document.getElementById('canvasWrap');
+  const el = document.getElementById('node_' + id);
+  if (!q || !wrap) return;
+  const rect = wrap.getBoundingClientRect();
+  const w = el ? el.offsetWidth : NODE_WIDTH;
+  const h = el ? el.offsetHeight : 220;
+  panX = rect.width / 2 - (q.x + w / 2) * zoom;
+  panY = rect.height / 2 - (q.y + h / 2) * zoom;
+  updateCanvasTransform();
+  if (el) {
+    el.classList.add('highlight');
+    setTimeout(() => el.classList.remove('highlight'), 1400);
+  }
+}
+
+/* ================= DRAGGING NODES, LINKS & PAN ================= */
+function startNodeDrag(e, id) {
+  if (e.button !== 0) return;
+  if (e.target.closest('button')) return;
+  e.stopPropagation();
+  const q = data.questions[id];
+  dragNodeState = {
+    id,
+    startClientX: e.clientX,
+    startClientY: e.clientY,
+    origX: q.x,
+    origY: q.y
+  };
+}
+
+function startLinkDrag(e, fromId, optIndex) {
+  if (e.button !== 0) return;
+  e.stopPropagation();
+  e.preventDefault();
+  const p1 = getPortOutWorldPos(fromId, optIndex);
+  linkState = {
+    fromId,
+    optIndex,
+    x1: p1.x,
+    y1: p1.y,
+    x2: p1.x,
+    y2: p1.y,
+    moved: false,
+    hoverTargetId: null
+  };
+  document.getElementById('canvasWrap').classList.add('connecting');
+  renderEdges();
+}
+
+const canvasWrapEl = document.getElementById('canvasWrap');
+
+canvasWrapEl.addEventListener('mousedown', e => {
+  if (adminSubView !== 'canvas') return;
+  if (e.target.closest('.minimap') || e.target.closest('.q-node') || e.target.closest('.edge-group')) {
+    if (e.button !== 1) return;
+  }
+  if (e.button === 1) e.preventDefault();
+  panState = {
+    startClientX: e.clientX,
+    startClientY: e.clientY,
+    origPanX: panX,
+    origPanY: panY
+  };
+  canvasWrapEl.classList.add('panning');
+});
+
+canvasWrapEl.addEventListener('wheel', e => {
+  if (adminSubView !== 'canvas') return;
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.1 : 0.9;
+  zoomAt(zoom * factor, e.clientX, e.clientY);
+}, { passive: false });
+
+window.addEventListener('mousemove', e => {
+  if (dragNodeState) {
+    const dx = (e.clientX - dragNodeState.startClientX) / zoom;
+    const dy = (e.clientY - dragNodeState.startClientY) / zoom;
+    const q = data.questions[dragNodeState.id];
+    q.x = Math.round(dragNodeState.origX + dx);
+    q.y = Math.round(dragNodeState.origY + dy);
+    const el = document.getElementById('node_' + dragNodeState.id);
+    if (el) {
+      el.style.left = q.x + 'px';
+      el.style.top = q.y + 'px';
+    }
+    renderEdges();
+    renderMinimap();
+  } else if (panState) {
+    panX = panState.origPanX + (e.clientX - panState.startClientX);
+    panY = panState.origPanY + (e.clientY - panState.startClientY);
+    updateCanvasTransform();
+  } else if (linkState) {
+    const pt = screenToWorld(e.clientX, e.clientY);
+    linkState.x2 = pt.x;
+    linkState.y2 = pt.y;
+    if (Math.hypot(pt.x - linkState.x1, pt.y - linkState.y1) > 25) {
+      linkState.moved = true;
+    }
+    // Detect hover target node
+    document.querySelectorAll('.q-node.drop-target').forEach(el => el.classList.remove('drop-target'));
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    const targetNode = under?.closest('.q-node');
+    const targetId = targetNode?.dataset.qid;
+    if (targetId && targetId !== linkState.fromId) {
+      linkState.hoverTargetId = targetId;
+      targetNode.classList.add('drop-target');
+    } else {
+      linkState.hoverTargetId = null;
+    }
+    renderEdges();
+  }
+});
+
+window.addEventListener('mouseup', e => {
+  if (dragNodeState) {
+    dragNodeState = null;
+    save();
+  }
+  if (panState) {
+    panState = null;
+    canvasWrapEl.classList.remove('panning');
+  }
+  if (linkState) {
+    document.querySelectorAll('.q-node.drop-target').forEach(el => el.classList.remove('drop-target'));
+    canvasWrapEl.classList.remove('connecting');
+    const { fromId, optIndex, hoverTargetId, moved, x2, y2 } = linkState;
+    linkState = null;
+
+    const opt = data.questions[fromId]?.options[optIndex];
+    if (opt) {
+      if (hoverTargetId && data.questions[hoverTargetId]) {
+        opt.next = hoverTargetId;
+        save();
+        renderAdmin();
+      } else if (moved) {
+        const newId = createQuestion(Math.round(x2), Math.round(Math.max(20, y2 - 30)));
+        opt.next = newId;
+        save();
+        renderAdmin();
+        focusNewTextarea(newId);
+      } else {
+        renderEdges();
+      }
+    } else {
+      renderEdges();
+    }
+  }
+  minimapDrag = false;
+});
+
+function focusNewTextarea(id) {
+  setTimeout(() => {
+    const ta = document.querySelector(`#node_${id} textarea`);
+    if (ta) {
+      ta.focus();
+      ta.select();
+    }
+  }, 40);
+}
+
+/* ================= MINIMAP (Miro-style) ================= */
+const minimapCanvas = document.getElementById('minimapCanvas');
+
+function renderMinimap() {
+  if (currentMode !== 'admin' || adminSubView !== 'canvas') return;
+  const wrap = document.getElementById('canvasWrap');
+  if (!wrap || !minimapCanvas) return;
+
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = 228;
+  const cssH = 146;
+  if (minimapCanvas.width !== cssW * dpr || minimapCanvas.height !== cssH * dpr) {
+    minimapCanvas.width = cssW * dpr;
+    minimapCanvas.height = cssH * dpr;
+  }
+  const ctx = minimapCanvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cssW, cssH);
+
+  const rect = wrap.getBoundingClientRect();
+  const viewLeft = -panX / zoom;
+  const viewTop = -panY / zoom;
+  const viewRight = viewLeft + rect.width / zoom;
+  const viewBottom = viewTop + rect.height / zoom;
+
+  let minX = viewLeft, minY = viewTop, maxX = viewRight, maxY = viewBottom;
+  const nodeRects = [];
+  for (const [id, q] of Object.entries(data.questions)) {
+    const el = document.getElementById('node_' + id);
+    const w = el ? el.offsetWidth : NODE_WIDTH;
+    const h = el ? el.offsetHeight : 200;
+    nodeRects.push({ id, x: q.x, y: q.y, w, h, q });
+    minX = Math.min(minX, q.x);
+    minY = Math.min(minY, q.y);
+    maxX = Math.max(maxX, q.x + w);
+    maxY = Math.max(maxY, q.y + h);
+  }
+
+  const pad = 120;
+  minX -= pad; minY -= pad; maxX += pad; maxY += pad;
+  const worldW = Math.max(1, maxX - minX);
+  const worldH = Math.max(1, maxY - minY);
+  const scale = Math.min((cssW - 12) / worldW, (cssH - 12) / worldH);
+  const offX = (cssW - worldW * scale) / 2;
+  const offY = (cssH - worldH * scale) / 2;
+
+  minimapTransform = { minX, minY, scale, offX, offY };
+
+  const toMini = (wx, wy) => ({
+    x: offX + (wx - minX) * scale,
+    y: offY + (wy - minY) * scale
+  });
+
+  // Edges
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 1.2;
+  for (const nr of nodeRects) {
+    nr.q.options.forEach(o => {
+      if (!o.next || !data.questions[o.next]) return;
+      const target = nodeRects.find(n => n.id === o.next);
+      if (!target) return;
+      const p1 = toMini(nr.x + nr.w, nr.y + nr.h / 2);
+      const p2 = toMini(target.x, target.y + 24);
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+    });
+  }
+
+  // Nodes
+  for (const nr of nodeRects) {
+    const p = toMini(nr.x, nr.y);
+    const mw = Math.max(8, nr.w * scale);
+    const mh = Math.max(6, nr.h * scale);
+    ctx.fillStyle = nr.id === data.start ? '#10b981' : '#3b82f6';
+    if (typeof ctx.roundRect === 'function') {
+      ctx.beginPath();
+      ctx.roundRect(p.x, p.y, mw, mh, 2.5);
+      ctx.fill();
+    } else {
+      ctx.fillRect(p.x, p.y, mw, mh);
+    }
+  }
+
+  // Viewport rectangle
+  const vp1 = toMini(viewLeft, viewTop);
+  const vpW = (viewRight - viewLeft) * scale;
+  const vpH = (viewBottom - viewTop) * scale;
+  ctx.fillStyle = 'rgba(37, 99, 235, 0.12)';
+  ctx.strokeStyle = '#2563eb';
+  ctx.lineWidth = 1.5;
+  ctx.fillRect(vp1.x, vp1.y, vpW, vpH);
+  ctx.strokeRect(vp1.x, vp1.y, vpW, vpH);
+}
+
+function panFromMinimap(e) {
+  if (!minimapTransform) return;
+  const rect = minimapCanvas.getBoundingClientRect();
+  const wrapRect = document.getElementById('canvasWrap').getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const wx = minimapTransform.minX + (mx - minimapTransform.offX) / minimapTransform.scale;
+  const wy = minimapTransform.minY + (my - minimapTransform.offY) / minimapTransform.scale;
+  panX = wrapRect.width / 2 - wx * zoom;
+  panY = wrapRect.height / 2 - wy * zoom;
+  updateCanvasTransform();
+}
+
+minimapCanvas.addEventListener('mousedown', e => {
+  e.stopPropagation();
+  minimapDrag = true;
+  panFromMinimap(e);
+});
+window.addEventListener('mousemove', e => {
+  if (minimapDrag) panFromMinimap(e);
+});
+
+/* ================= CRUD OPERATIONS ================= */
+function createQuestion(x = 100, y = 100) {
+  const id = uid();
+  data.questions[id] = { text: 'Nova pergunta', x, y, options: [] };
+  if (!data.start) data.start = id;
+  return id;
+}
+
+function addQuestionAtCenter() {
+  if (adminSubView === 'canvas') {
+    const wrap = document.getElementById('canvasWrap').getBoundingClientRect();
+    const wx = Math.round((wrap.width / 2 - panX) / zoom - NODE_WIDTH / 2);
+    const wy = Math.round((wrap.height / 2 - panY) / zoom - 80);
+    const id = createQuestion(wx, wy);
+    save();
+    renderAdmin();
+    focusNewTextarea(id);
+  } else {
+    const id = createQuestion(100, 100 + Object.keys(data.questions).length * 240);
+    save();
+    renderAdmin();
+  }
+}
+
+function deleteQuestion(id) {
+  if (!confirm('Apagar esta pergunta?')) return;
+  delete data.questions[id];
+  Object.values(data.questions).forEach(q => {
+    q.options.forEach(o => {
+      if (o.next === id) o.next = null;
+    });
+  });
+  if (data.start === id) {
+    data.start = Object.keys(data.questions)[0] || '';
+  }
+  save();
+  renderAdmin();
+}
+
+function setStartQuestion(id) {
+  data.start = id;
+  save();
+  renderAdmin();
+}
+
+function updateQuestionText(id, val) {
+  data.questions[id].text = val;
+  save();
+  refreshStartPicker();
+  document.querySelectorAll(`[data-target-label="${id}"]`).forEach(el => {
+    el.textContent = '↳ ' + (val || 'Pergunta seguinte');
+  });
+}
+
+function addOption(id) {
+  data.questions[id].options.push({ text: 'Nova opção', next: null, result: '' });
+  save();
+  renderAdmin();
+}
+
+function deleteOption(id, optIdx) {
+  data.questions[id].options.splice(optIdx, 1);
+  save();
+  renderAdmin();
+}
+
+function updateOptionText(id, optIdx, val) {
+  data.questions[id].options[optIdx].text = val;
+  save();
+}
+
+function updateOptionResult(id, optIdx, val) {
+  data.questions[id].options[optIdx].result = val;
+  save();
+}
+
+function unlinkOption(id, optIdx) {
+  data.questions[id].options[optIdx].next = null;
+  save();
+  renderAdmin();
+}
+
+function setOptionNext(id, optIdx, nextId) {
+  data.questions[id].options[optIdx].next = nextId || null;
+  save();
+  renderAdmin();
+}
+
+function goOrCreateNext(id, optIdx) {
+  const q = data.questions[id];
+  const opt = q?.options[optIdx];
+  if (!opt) return;
+
+  if (opt.next && data.questions[opt.next]) {
+    if (adminSubView === 'canvas') {
+      focusNode(opt.next);
+    } else {
+      const card = document.getElementById('list_' + opt.next);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.style.outline = '3px solid var(--primary)';
+        setTimeout(() => (card.style.outline = ''), 1400);
+      }
+    }
+  } else {
+    const newX = q.x + 390;
+    const newY = q.y + optIdx * 160;
+    const newId = createQuestion(newX, newY);
+    opt.next = newId;
+    save();
+    renderAdmin();
+    if (adminSubView === 'canvas') {
+      focusNode(newId);
+      focusNewTextarea(newId);
+    }
+  }
+}
+
+/* ================= LIST VIEW ================= */
+function renderListView() {
+  const container = document.getElementById('listContainer');
+  const entries = Object.entries(data.questions);
+  if (!entries.length) {
+    container.innerHTML = `<div class="list-card">Sem perguntas. Clique em <b>+ Nova pergunta</b> para começar.</div>`;
+    return;
+  }
+
+  const nextSelect = (cur) =>
+    `<option value="">— Sem pergunta seguinte (fim / solução) —</option>` +
+    entries.map(([k, q]) => `<option value="${k}" ${k === cur ? 'selected' : ''}>${esc(q.text || '(Sem título)').slice(0, 55)}</option>`).join('');
+
+  container.innerHTML = entries.map(([id, q]) => {
+    const isStart = id === data.start;
+    return `
+      <div class="list-card ${isStart ? 'is-start' : ''}" id="list_${id}">
+        <div class="list-head">
+          <input type="text" value="${esc(q.text)}" oninput="updateQuestionText('${id}', this.value)" placeholder="Texto da pergunta">
+          ${isStart
+            ? `<span class="badge-start">INÍCIO</span>`
+            : `<button class="btn" onclick="setStartQuestion('${id}')">🚩 Início</button>`}
+          <button class="btn btn-danger" onclick="deleteQuestion('${id}')">🗑</button>
+        </div>
+        ${q.options.map((o, j) => `
+          <div class="list-opt">
+            <input type="text" value="${esc(o.text)}" placeholder="Resposta" oninput="updateOptionText('${id}', ${j}, this.value)">
+            <button class="btn btn-primary" title="Ir para / criar pergunta seguinte" onclick="goOrCreateNext('${id}', ${j})">➜</button>
+            <select onchange="setOptionNext('${id}', ${j}, this.value)">${nextSelect(o.next)}</select>
+            <button class="btn btn-danger" onclick="deleteOption('${id}', ${j})">✕</button>
+          </div>
+          ${o.next ? '' : `<input type="text" class="opt-res-input" style="margin-bottom:8px" value="${esc(o.result || '')}" placeholder="✅ Solução / resultado final" oninput="updateOptionResult('${id}', ${j}, this.value)">`}
+        `).join('')}
+        <button class="btn" onclick="addOption('${id}')">＋ Adicionar resposta</button>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ================= JSON IMPORT / EXPORT ================= */
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'troubleshoot-passaporte.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (!parsed || typeof parsed !== 'object' || !parsed.questions || typeof parsed.questions !== 'object') {
+        throw new Error('Formato inválido');
+      }
+      data = normalizeData(parsed);
+      save();
+      renderAdmin();
+      if (adminSubView === 'canvas') fitView();
+      alert('Fluxo importado com sucesso.');
+    } catch (err) {
+      alert('O ficheiro JSON não tem um formato válido.');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function resetSample() {
+  if (!confirm('Repor o fluxo de exemplo? As alterações atuais serão substituídas.')) return;
+  data = createSampleData();
+  save();
+  renderAdmin();
+  if (adminSubView === 'canvas') fitView();
+}
+
+window.addEventListener('resize', () => {
+  if (currentMode === 'admin' && adminSubView === 'canvas') {
+    renderMinimap();
+  }
+});
+
+// Boot
+startUserFlow();
 </script>
 </body>
 </html>
